@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | Tarjetas REFAX</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 18px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+
+        .logo {
+            height: 70px;
+        }
+
+        .logout {
+            text-decoration: none;
+            background: #f47b20;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .title {
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #f47b20;
+            margin-top: 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+        }
+
+        .fixed-info {
+            margin-top: 15px;
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 12px;
+            border-left: 5px solid #f47b20;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #f47b20;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-edit {
+            background: #374151;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #f47b20;
+            border: 1px solid #f47b20;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+        }
+
+        th {
+            background: #6b7280;
+            color: white;
+            padding: 14px;
+            text-align: left;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .qr-img {
+            width: 85px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 5px;
+            background: white;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            .logo {
+                height: 55px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <img src="{{ url_for('static', filename='img/refax-logo.png') }}" class="logo" alt="Logo Refax">
+        <a href="{{ url_for('auth.logout') }}" class="logout">Cerrar sesión</a>
+    </header>
+
+    <main class="container">
+        <h1 class="title">Panel de Administrador</h1>
+        <h2 class="subtitle">Tarjetas digitales REFAX Perú</h2>
+
+        <section class="card">
+            <h2>Registrar nuevo usuario</h2>
+
+            <form method="POST" action="{{ url_for('admin.registrar') }}">
+                <div class="form-grid">
+                    <div>
+                        <label>Nombre completo</label>
+                        <input type="text" name="nombre" required>
+                    </div>
+
+                    <div>
+                        <label>Cargo</label>
+                        <input type="text" name="cargo" required>
+                    </div>
+
+                    <div>
+                        <label>Celular</label>
+                        <input type="text" name="celular" required>
+                    </div>
+
+                    <div>
+                        <label>Correo corporativo</label>
+                        <input type="email" name="correo" required>
+                    </div>
+                </div>
+
+                <div class="fixed-info">
+                    <strong>Empresa:</strong> {{ empresa }} <br>
+                    <strong>Web:</strong> {{ web }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Registrar usuario
+                </button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Usuarios registrados</h2>
+
+            {% if usuarios %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cargo</th>
+                            <th>Correo</th>
+                            <th>Usuario</th>
+                            <th>QR</th>
+                            <th>Tarjeta</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.nombre }}</td>
+                            <td>{{ usuario.cargo }}</td>
+                            <td>{{ usuario.correo }}</td>
+                            <td>{{ usuario.username }}</td>
+
+                            <td>
+                                <img class="qr-img" src="{{ url_for('static', filename='qr/' + usuario.qr_filename) }}">
+                                <br><br>
+                                <a class="btn btn-outline" href="{{ url_for('public.descargar_qr', filename=usuario.qr_filename) }}">
+                                    Descargar
+                                </a>
+                            </td>
+
+                            <td>
+                                <a class="btn btn-secondary" href="{{ url_for('public.tarjeta_publica', public_id=usuario.public_id) }}" target="_blank">
+                                    Ver tarjeta
+                                </a>
+                            </td>
+
+                            <td>
+                                <div class="actions">
+                                    <a class="btn btn-edit" href="{{ url_for('admin.editar', public_id=usuario.public_id) }}">
+                                        Editar
+                                    </a>
+
+                                    <form method="POST" action="{{ url_for('admin.eliminar', public_id=usuario.public_id) }}">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?')">
+                                            Eliminar
+                                        </button>
+                                    </form>
+
+                                    <form method="POST" action="{{ url_for('admin.regenerar_qr', public_id=usuario.public_id) }}">
+                                        <button type="submit" class="btn btn-primary">
+                                            Regenerar QR
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty">
+                    No hay usuarios registrados todavía.
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Panel Admin | Tarjetas REFAX</title>
+
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <style>
+    .admin-nav{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:20px 0;
+    }
+
+    .admin-nav .active{
+      pointer-events:none;
+      opacity:.85;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header">
+  <img
+    src="assets/img/refax-logo.png"
+    class="logo"
+    alt="Logo Refax"
+  >
+
+  <button
+    class="btn btn-primary no-margin"
+    onclick="logout()"
+  >
+    Cerrar sesión
+  </button>
+</header>
+
+<main class="container">
+
+  <h1 class="title">
+    Panel de Administrador
+  </h1>
+
+  <h2 class="subtitle">
+    Tarjetas digitales REFAX Perú
+  </h2>
+
+  <!-- ========================= -->
+  <!-- NAVEGACIÓN ADMIN -->
+  <!-- ========================= -->
+
+  <div class="admin-nav">
+
+    <a
+      href="admin.html"
+      class="btn btn-primary active"
+    >
+      Gestión de tarjetas
+    </a>
+
+    <a
+      href="accesos.html"
+      class="btn btn-secondary"
+    >
+      Gestión de accesos
+    </a>
+
+  </div>
+
+  <div
+    id="msg"
+    class="message"
+  ></div>
+
+
+  <!-- ========================= -->
+  <!-- REGISTRAR USUARIO -->
+  <!-- ========================= -->
+
+  <section class="card">
+
+    <h2>
+      Registrar nuevo usuario
+    </h2>
+
+    <form id="registerForm">
+
+      <div class="form-grid form-grid-type">
+
+        <div>
+          <label>
+            Tipo de usuario
+          </label>
+
+          <select
+            id="tipo_usuario"
+            required
+          >
+            <option value="">
+              Seleccionar...
+            </option>
+
+            <option value="GNs">
+              GNs
+            </option>
+
+            <option value="B2B">
+              B2B
+            </option>
+
+            <option value="Administrativo">
+              Administrativo
+            </option>
+
+          </select>
+        </div>
+
+
+        <div>
+          <label>
+            Nombre completo
+          </label>
+
+          <input
+            type="text"
+            id="nombre"
+            required
+          >
+        </div>
+
+
+        <div>
+          <label>
+            Celular
+          </label>
+
+          <input
+            type="text"
+            id="celular"
+            required
+          >
+        </div>
+
+
+        <div>
+
+          <label id="correoLabel">
+            Correo corporativo
+          </label>
+
+          <input
+            type="email"
+            id="correo"
+            required
+          >
+
+          <small
+            id="correoHint"
+            class="field-hint"
+          ></small>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="dynamicFields"
+        class="form-grid dynamic-fields"
+      ></div>
+
+
+      <div
+        id="typePreview"
+        class="type-preview muted"
+      >
+        Selecciona un tipo de usuario para ver los campos correspondientes.
+      </div>
+
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+      >
+        Registrar usuario
+      </button>
+
+    </form>
+
+  </section>
+
+
+  <!-- ========================= -->
+  <!-- USUARIOS REGISTRADOS -->
+  <!-- ========================= -->
+
+  <section class="card">
+
+    <div class="section-heading">
+
+      <div>
+
+        <h2>
+          Usuarios registrados
+        </h2>
+
+        <p class="muted">
+          Desde Gestión de accesos puedes bloquear usuarios,
+          desbloquearlos o administrar sus contraseñas.
+        </p>
+
+      </div>
+
+      <a
+        href="accesos.html"
+        class="btn btn-secondary"
+      >
+        Administrar accesos
+      </a>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Detalle</th>
+            <th>Correo</th>
+            <th>Usuario</th>
+            <th>QR</th>
+            <th>Tarjeta</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody id="tbody">
+
+          <tr>
+            <td
+              colspan="8"
+              class="loading"
+            >
+              Cargando usuarios...
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+
+<script>
+
+if(requireRole('admin')){
+  loadUsers();
+}
+
+
+const tbody =
+  document.getElementById('tbody');
+
+const msg =
+  document.getElementById('msg');
+
+const tipoSelect =
+  document.getElementById('tipo_usuario');
+
+const dynamicFields =
+  document.getElementById('dynamicFields');
+
+const typePreview =
+  document.getElementById('typePreview');
+
+const correoLabel =
+  document.getElementById('correoLabel');
+
+const correoHint =
+  document.getElementById('correoHint');
+
+
+let users=[];
+
+
+const infoTipos={
+
+  GNs:{
+    preview:
+      'Campos de tarjeta: Nombre, Celular y Correo. ' +
+      'Call Center, Oficina, logo REFAX y logos de marcas ' +
+      'se agregan automáticamente.'
+  },
+
+  B2B:{
+    preview:
+      'Campos de tarjeta: Nombre, Ejecutivo Web, Celular ' +
+      'y Atención web. Central, Oficina y frase e-commerce ' +
+      'son fijos. El correo se usa solo para iniciar sesión.'
+  },
+
+  Administrativo:{
+    preview:
+      'Campos de tarjeta: Nombre, Cargo, Celular y Correo. ' +
+      'Central, Oficina, logo REFAX, logos de marcas y web ' +
+      'se agregan automáticamente.'
+  }
+
+};
+
+
+function renderFields(){
+
+  const tipo =
+    tipoSelect.value;
+
+  dynamicFields.innerHTML='';
+
+  correoLabel.textContent =
+    tipo==='B2B'
+      ? 'Correo corporativo (solo acceso)'
+      : 'Correo corporativo';
+
+  correoHint.textContent =
+    tipo==='B2B'
+      ? 'Se utilizará para generar el usuario de acceso y no se mostrará en la tarjeta pública.'
+      : '';
+
+  typePreview.textContent =
+    tipo
+      ? infoTipos[tipo].preview
+      : 'Selecciona un tipo de usuario para ver los campos correspondientes.';
+
+
+  if(tipo==='Administrativo'){
+
+    dynamicFields.innerHTML=`
+      <div>
+        <label>Cargo</label>
+        <input
+          type="text"
+          id="cargo"
+          required
+        >
+      </div>
+    `;
+
+  }
+
+
+  if(tipo==='B2B'){
+
+    dynamicFields.innerHTML=`
+      <div>
+        <label>Atención web</label>
+
+        <input
+          type="text"
+          id="atencion_web"
+          required
+        >
+      </div>
+
+      <div class="fixed-field">
+        <strong>Cargo:</strong>
+        Ejecutivo Web
+      </div>
+    `;
+
+  }
+
+}
+
+
+tipoSelect.addEventListener(
+  'change',
+  renderFields
+);
+
+
+function showMsg(
+  text,
+  type='ok'
+){
+
+  msg.textContent=text;
+
+  msg.className=
+    `message ${type} show`;
+
+  setTimeout(
+    ()=>msg.classList.remove('show'),
+    4000
+  );
+
+}
+
+
+function detail(u){
+
+  if(u.tipo_usuario==='B2B'){
+    return `Ejecutivo Web · ${esc(u.atencion_web||'')}`;
+  }
+
+  if(u.tipo_usuario==='Administrativo'){
+    return esc(u.cargo||'');
+  }
+
+  return 'Call Center GNs';
+}
+
+
+async function loadUsers(){
+
+  try{
+
+    users=
+      await api(
+        '/api/admin/usuarios'
+      );
+
+
+    tbody.innerHTML=
+      users.length
+
+      ? users.map(u=>`
+
+        <tr>
+
+          <td>
+            ${esc(u.nombre)}
+          </td>
+
+          <td>
+            <span
+              class="type-badge type-${slug(u.tipo_usuario)}"
+            >
+              ${esc(u.tipo_usuario||'Administrativo')}
+            </span>
+          </td>
+
+          <td>
+            ${detail(u)}
+          </td>
+
+          <td>
+            ${esc(u.correo)}
+          </td>
+
+          <td>
+            ${esc(u.username)}
+          </td>
+
+          <td>
+
+            <img
+              class="qr-img"
+              src="${u.qr_url}"
+              alt="QR"
+            >
+
+            <br><br>
+
+            <a
+              class="btn btn-outline"
+              href="${u.qr_url}"
+              target="_blank"
+            >
+              Descargar
+            </a>
+
+          </td>
+
+          <td>
+
+            <a
+              class="btn btn-secondary"
+              href="${u.card_url}"
+              target="_blank"
+            >
+              Ver tarjeta
+            </a>
+
+          </td>
+
+          <td>
+
+            <div class="actions">
+
+              <a
+                class="btn btn-edit"
+                href="editar.html?id=${encodeURIComponent(u.public_id)}"
+              >
+                Editar
+              </a>
+
+              <button
+                class="btn btn-danger"
+                onclick="
+                  removeUser(
+                    '${u.public_id}',
+                    '${escAttr(u.nombre)}'
+                  )
+                "
+              >
+                Eliminar
+              </button>
+
+              <button
+                class="btn btn-primary no-margin"
+                onclick="
+                  refreshQr(
+                    '${u.public_id}'
+                  )
+                "
+              >
+                Regenerar QR
+              </button>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+      `).join('')
+
+      :
+
+      `
+      <tr>
+        <td
+          colspan="8"
+          class="empty"
+        >
+          No hay usuarios registrados todavía.
+        </td>
+      </tr>
+      `;
+
+  }
+
+  catch(e){
+
+    tbody.innerHTML=`
+      <tr>
+        <td
+          colspan="8"
+          class="empty"
+        >
+          ${esc(e.message)}
+        </td>
+      </tr>
+    `;
+
+  }
+
+}
+
+
+registerForm.addEventListener(
+  'submit',
+  async e=>{
+
+    e.preventDefault();
+
+
+    const payload={
+
+      tipo_usuario:
+        tipoSelect.value,
+
+      nombre:
+        nombre.value,
+
+      celular:
+        celular.value,
+
+      correo:
+        correo.value
+
+    };
+
+
+    const cargo=
+      document.getElementById(
+        'cargo'
+      );
+
+    const atencion=
+      document.getElementById(
+        'atencion_web'
+      );
+
+
+    if(cargo){
+      payload.cargo=
+        cargo.value;
+    }
+
+    if(atencion){
+      payload.atencion_web=
+        atencion.value;
+    }
+
+
+    try{
+
+      await api(
+        '/api/admin/usuarios',
+        {
+          method:'POST',
+          body:JSON.stringify(
+            payload
+          )
+        }
+      );
+
+
+      e.target.reset();
+
+      renderFields();
+
+      showMsg(
+        'Usuario registrado correctamente'
+      );
+
+      loadUsers();
+
+    }
+
+    catch(err){
+
+      showMsg(
+        err.message,
+        'error'
+      );
+
+    }
+
+  }
+);
+
+
+async function removeUser(
+  id,
+  name
+){
+
+  if(
+    !confirm(
+      `¿Seguro que deseas eliminar a ${name}?`
+    )
+  ){
+    return;
+  }
+
+
+  try{
+
+    await api(
+      `/api/admin/usuarios/${id}`,
+      {
+        method:'DELETE'
+      }
+    );
+
+    showMsg(
+      'Usuario eliminado'
+    );
+
+    loadUsers();
+
+  }
+
+  catch(err){
+
+    showMsg(
+      err.message,
+      'error'
+    );
+
+  }
+
+}
+
+
+function refreshQr(id){
+
+  document
+    .querySelectorAll(
+      '.qr-img'
+    )
+    .forEach(img=>{
+
+      if(
+        img.src.includes(
+          `/api/qr/${id}.png`
+        )
+      ){
+
+        img.src=
+          img.src.split('?')[0]
+          +'?t='
+          +Date.now();
+
+      }
+
+    });
+
+
+  showMsg(
+    'QR actualizado'
+  );
+
+}
+
+
+function esc(v=''){
+
+  return String(v).replace(
+    /[&<>"']/g,
+    c=>({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[c])
+  );
+
+}
+
+
+function escAttr(v=''){
+
+  return String(v).replace(
+    /'/g,
+    "\\'"
+  );
+
+}
+
+
+function slug(v=''){
+
+  return String(v)
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9]/g,
+      ''
+    );
+
+}
+
+</script>
+
+</body>
+</html>

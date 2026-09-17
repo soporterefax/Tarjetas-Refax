@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi tarjeta | REFAX</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/usuario.css') }}">
+</head>
+
+<body>
+    <header class="header">
+        <img src="{{ url_for('static', filename='img/refax-logo.png') }}" class="logo" alt="Logo Refax">
+        <a href="{{ url_for('auth.logout') }}" class="logout">Cerrar sesión</a>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h1 class="user-name">{{ usuario.nombre }}</h1>
+            <div class="user-cargo">{{ usuario.cargo }}</div>
+
+            <div class="info">
+                <p><strong>Empresa:</strong> {{ usuario.empresa }}</p>
+                <p><strong>Correo:</strong> {{ usuario.correo }}</p>
+                <p><strong>Celular:</strong> {{ usuario.celular }}</p>
+                <p><strong>Web:</strong> {{ usuario.web }}</p>
+            </div>
+
+            <img class="qr" src="{{ url_for('static', filename='qr/' + usuario.qr_filename) }}" alt="QR">
+
+            <div class="actions">
+                <a class="btn btn-primary" href="{{ url_for('public.tarjeta_publica', public_id=usuario.public_id) }}" target="_blank">
+                    Ver mi tarjeta
+                </a>
+
+                <a class="btn btn-secondary" href="{{ url_for('public.descargar_qr', filename=usuario.qr_filename) }}">
+                    Descargar QR
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

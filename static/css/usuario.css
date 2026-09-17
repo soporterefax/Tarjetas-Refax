@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.header {
+    background: white;
+    padding: 18px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+}
+
+.logo {
+    height: 70px;
+}
+
+.logout {
+    background: #f47b20;
+    color: white;
+    padding: 11px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 900px;
+    margin: 35px auto;
+    padding: 0 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.10);
+    text-align: center;
+    border-top: 8px solid #f47b20;
+}
+
+.user-name {
+    font-size: 32px;
+    margin-bottom: 5px;
+    color: #374151;
+}
+
+.user-cargo {
+    color: #f47b20;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.info {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: left;
+    margin: 25px 0;
+}
+
+.info p {
+    margin: 12px 0;
+}
+
+.qr {
+    width: 230px;
+    background: white;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+}
+
+.actions {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 18px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: #f47b20;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .logo {
+        height: 55px;
+    }
+
+    .user-name {
+        font-size: 25px;
+    }
+}

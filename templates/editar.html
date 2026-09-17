@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar usuario | REFAX</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .header {
+            background: white;
+            padding: 18px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+
+        .logo {
+            height: 70px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: #6b7280;
+        }
+
+        .subtitle {
+            color: #f47b20;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin-top: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: #f47b20;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="{{ url_for('static', filename='img/refax-logo.png') }}" class="logo" alt="Logo Refax">
+        <a href="{{ url_for('admin.panel') }}" class="btn btn-secondary">Volver al panel</a>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h1>Editar usuario</h1>
+            <h2 class="subtitle">{{ usuario.nombre }}</h2>
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('admin.editar', public_id=usuario.public_id) }}">
+                <label>Nombre completo</label>
+                <input type="text" name="nombre" value="{{ usuario.nombre }}" required>
+
+                <label>Cargo</label>
+                <input type="text" name="cargo" value="{{ usuario.cargo }}" required>
+
+                <label>Celular</label>
+                <input type="text" name="celular" value="{{ usuario.celular }}" required>
+
+                <label>Correo corporativo</label>
+                <input type="email" name="correo" value="{{ usuario.correo }}" required>
+
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1.0"
+  >
+
+  <title>
+    Gestión de accesos | REFAX
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="assets/css/app.css"
+  >
+
+
+  <style>
+
+    .admin-nav{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:20px 0;
+    }
+
+
+    .admin-nav .active{
+      pointer-events:none;
+      opacity:.85;
+    }
+
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+
+    .status-active{
+      background:#e8f7ee;
+      color:#18733d;
+    }
+
+
+    .status-blocked{
+      background:#fdecec;
+      color:#a32929;
+    }
+
+
+    .password-status{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:600;
+      background:#f2f2f2;
+    }
+
+
+    dialog{
+      border:none;
+      border-radius:14px;
+      padding:0;
+      max-width:480px;
+      width:calc(100% - 32px);
+    }
+
+
+    dialog::backdrop{
+      background:rgba(0,0,0,.45);
+    }
+
+
+    .modal-content{
+      padding:24px;
+    }
+
+
+    .modal-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:20px;
+    }
+
+
+    .password-result{
+      margin-top:16px;
+      padding:14px;
+      border-radius:10px;
+      background:#f5f5f5;
+      word-break:break-all;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+  <img
+    src="assets/img/refax-logo.png"
+    class="logo"
+    alt="Logo Refax"
+  >
+
+  <button
+    class="btn btn-primary no-margin"
+    onclick="logout()"
+  >
+    Cerrar sesión
+  </button>
+
+</header>
+
+
+<main class="container">
+
+
+  <h1 class="title">
+    Gestión de accesos
+  </h1>
+
+
+  <h2 class="subtitle">
+    Usuarios y seguridad
+  </h2>
+
+
+  <div class="admin-nav">
+
+    <a
+      href="admin.html"
+      class="btn btn-secondary"
+    >
+      Gestión de tarjetas
+    </a>
+
+
+    <a
+      href="accesos.html"
+      class="btn btn-primary active"
+    >
+      Gestión de accesos
+    </a>
+
+  </div>
+
+
+  <div
+    id="msg"
+    class="message"
+  ></div>
+
+
+  <section class="card">
+
+    <div class="section-heading">
+
+      <div>
+
+        <h2>
+          Accesos de usuarios
+        </h2>
+
+        <p class="muted">
+          Administra contraseñas y permisos de acceso.
+          Las contraseñas actuales no se almacenan en texto visible.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Usuario
+            </th>
+
+            <th>
+              Nombre
+            </th>
+
+            <th>
+              Tipo
+            </th>
+
+            <th>
+              Contraseña
+            </th>
+
+            <th>
+              Estado
+            </th>
+
+            <th>
+              Acciones
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody id="accessBody">
+
+          <tr>
+
+            <td
+              colspan="6"
+              class="loading"
+            >
+              Cargando accesos...
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<!-- ================================= -->
+<!-- MODAL CAMBIAR PASSWORD -->
+<!-- ================================= -->
+
+<dialog id="passwordDialog">
+
+  <div class="modal-content">
+
+    <h2>
+      Cambiar contraseña
+    </h2>
+
+
+    <p
+      id="passwordUser"
+      class="muted"
+    ></p>
+
+
+    <form id="passwordForm">
+
+
+      <label>
+        Nueva contraseña
+      </label>
+
+      <input
+        type="password"
+        id="passwordNueva"
+        minlength="8"
+        required
+      >
+
+
+      <label>
+        Confirmar contraseña
+      </label>
+
+      <input
+        type="password"
+        id="passwordConfirmacion"
+        minlength="8"
+        required
+      >
+
+
+      <div class="modal-actions">
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Guardar contraseña
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-outline"
+          id="cancelPassword"
+        >
+          Cancelar
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</dialog>
+
+
+<!-- ================================= -->
+<!-- MODAL PASSWORD TEMPORAL -->
+<!-- ================================= -->
+
+<dialog id="temporaryDialog">
+
+  <div class="modal-content">
+
+    <h2>
+      Contraseña temporal
+    </h2>
+
+
+    <p>
+      Comunica esta contraseña al usuario.
+      Después de cerrar esta ventana no se podrá consultar nuevamente.
+    </p>
+
+
+    <div
+      id="temporaryPassword"
+      class="password-result"
+    ></div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="closeTemporary"
+      >
+        Entendido
+      </button>
+
+    </div>
+
+  </div>
+
+</dialog>
+
+
+<script src="assets/js/config.js"></script>
+
+<script src="assets/js/api.js"></script>
+
+
+<script>
+
+
+if(requireRole('admin')){
+  loadAccess();
+}
+
+
+const accessBody =
+  document.getElementById(
+    'accessBody'
+  );
+
+
+const msg =
+  document.getElementById(
+    'msg'
+  );
+
+
+const passwordDialog =
+  document.getElementById(
+    'passwordDialog'
+  );
+
+
+const temporaryDialog =
+  document.getElementById(
+    'temporaryDialog'
+  );
+
+
+let selectedUser=null;
+
+
+
+function showMsg(
+  text,
+  type='ok'
+){
+
+  msg.textContent=text;
+
+  msg.className=
+    `message ${type} show`;
+
+  setTimeout(
+    ()=>msg.classList.remove('show'),
+    4000
+  );
+
+}
+
+
+
+async function loadAccess(){
+
+  try{
+
+    const users=
+      await api(
+        '/api/admin/accesos'
+      );
+
+
+    accessBody.innerHTML=
+      users.length
+
+      ? users.map(u=>`
+
+        <tr>
+
+
+          <td>
+
+            <strong>
+              ${esc(u.username)}
+            </strong>
+
+            <br>
+
+            <small class="muted">
+              ${esc(u.correo)}
+            </small>
+
+          </td>
+
+
+          <td>
+            ${esc(u.nombre)}
+          </td>
+
+
+          <td>
+
+            <span
+              class="type-badge type-${slug(u.tipo_usuario)}"
+            >
+              ${esc(u.tipo_usuario)}
+            </span>
+
+          </td>
+
+
+          <td>
+
+            <span class="password-status">
+
+              ${
+                u.debe_cambiar_password
+                ? 'Temporal'
+                : 'Cambiada'
+              }
+
+            </span>
+
+          </td>
+
+
+          <td>
+
+            ${
+              u.activo
+
+              ?
+
+              `
+              <span
+                class="status status-active"
+              >
+                ● Activo
+              </span>
+              `
+
+              :
+
+              `
+              <span
+                class="status status-blocked"
+              >
+                ● Bloqueado
+              </span>
+              `
+            }
+
+          </td>
+
+
+          <td>
+
+            <div class="actions">
+
+
+              <button
+                class="btn btn-edit"
+                onclick="
+                  openPassword(
+                    '${u.public_id}',
+                    '${escAttr(u.username)}'
+                  )
+                "
+              >
+                Cambiar clave
+              </button>
+
+
+              <button
+                class="btn btn-secondary"
+                onclick="
+                  resetPassword(
+                    '${u.public_id}',
+                    '${escAttr(u.username)}'
+                  )
+                "
+              >
+                Restablecer
+              </button>
+
+
+              ${
+                u.activo
+
+                ?
+
+                `
+                <button
+                  class="btn btn-danger"
+                  onclick="
+                    blockUser(
+                      '${u.public_id}',
+                      '${escAttr(u.username)}'
+                    )
+                  "
+                >
+                  Bloquear
+                </button>
+                `
+
+                :
+
+                `
+                <button
+                  class="btn btn-primary no-margin"
+                  onclick="
+                    unblockUser(
+                      '${u.public_id}',
+                      '${escAttr(u.username)}'
+                    )
+                  "
+                >
+                  Desbloquear
+                </button>
+                `
+              }
+
+
+            </div>
+
+          </td>
+
+
+        </tr>
+
+      `).join('')
+
+      :
+
+      `
+      <tr>
+
+        <td
+          colspan="6"
+          class="empty"
+        >
+          No existen usuarios.
+        </td>
+
+      </tr>
+      `;
+
+  }
+
+  catch(err){
+
+    accessBody.innerHTML=`
+
+      <tr>
+
+        <td
+          colspan="6"
+          class="empty"
+        >
+          ${esc(err.message)}
+        </td>
+
+      </tr>
+
+    `;
+
+  }
+
+}
+
+
+
+function openPassword(
+  publicId,
+  username
+){
+
+  selectedUser=
+    publicId;
+
+
+  document.getElementById(
+    'passwordUser'
+  ).textContent=
+    `Usuario: ${username}`;
+
+
+  document.getElementById(
+    'passwordNueva'
+  ).value='';
+
+
+  document.getElementById(
+    'passwordConfirmacion'
+  ).value='';
+
+
+  passwordDialog.showModal();
+
+}
+
+
+
+document
+  .getElementById(
+    'cancelPassword'
+  )
+  .addEventListener(
+    'click',
+    ()=>passwordDialog.close()
+  );
+
+
+
+document
+  .getElementById(
+    'passwordForm'
+  )
+  .addEventListener(
+    'submit',
+    async e=>{
+
+      e.preventDefault();
+
+
+      const password_nueva=
+        document.getElementById(
+          'passwordNueva'
+        ).value;
+
+
+      const password_confirmacion=
+        document.getElementById(
+          'passwordConfirmacion'
+        ).value;
+
+
+      try{
+
+        await api(
+          `/api/admin/usuarios/${selectedUser}/cambiar-password`,
+          {
+
+            method:'POST',
+
+            body:JSON.stringify({
+
+              password_nueva,
+
+              password_confirmacion
+
+            })
+
+          }
+        );
+
+
+        passwordDialog.close();
+
+
+        showMsg(
+          'Contraseña actualizada correctamente'
+        );
+
+
+        loadAccess();
+
+      }
+
+      catch(err){
+
+        showMsg(
+          err.message,
+          'error'
+        );
+
+      }
+
+    }
+  );
+
+
+
+async function resetPassword(
+  publicId,
+  username
+){
+
+  if(
+    !confirm(
+      `¿Restablecer la contraseña de ${username}?`
+    )
+  ){
+    return;
+  }
+
+
+  try{
+
+    const result=
+      await api(
+        `/api/admin/usuarios/${publicId}/reset-password`,
+        {
+          method:'POST'
+        }
+      );
+
+
+    document.getElementById(
+      'temporaryPassword'
+    ).textContent=
+      result.password_temporal;
+
+
+    temporaryDialog.showModal();
+
+
+    loadAccess();
+
+  }
+
+  catch(err){
+
+    showMsg(
+      err.message,
+      'error'
+    );
+
+  }
+
+}
+
+
+
+document
+  .getElementById(
+    'closeTemporary'
+  )
+  .addEventListener(
+    'click',
+    ()=>temporaryDialog.close()
+  );
+
+
+
+async function blockUser(
+  publicId,
+  username
+){
+
+  if(
+    !confirm(
+      `¿Deseas bloquear el acceso de ${username}?`
+    )
+  ){
+    return;
+  }
+
+
+  try{
+
+    await api(
+      `/api/admin/usuarios/${publicId}/bloquear`,
+      {
+        method:'POST'
+      }
+    );
+
+
+    showMsg(
+      'Usuario bloqueado correctamente'
+    );
+
+
+    loadAccess();
+
+  }
+
+  catch(err){
+
+    showMsg(
+      err.message,
+      'error'
+    );
+
+  }
+
+}
+
+
+
+async function unblockUser(
+  publicId,
+  username
+){
+
+  if(
+    !confirm(
+      `¿Deseas desbloquear a ${username}?`
+    )
+  ){
+    return;
+  }
+
+
+  try{
+
+    await api(
+      `/api/admin/usuarios/${publicId}/desbloquear`,
+      {
+        method:'POST'
+      }
+    );
+
+
+    showMsg(
+      'Usuario desbloqueado correctamente'
+    );
+
+
+    loadAccess();
+
+  }
+
+  catch(err){
+
+    showMsg(
+      err.message,
+      'error'
+    );
+
+  }
+
+}
+
+
+
+function esc(v=''){
+
+  return String(v).replace(
+    /[&<>"']/g,
+    c=>({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[c])
+  );
+
+}
+
+
+
+function escAttr(v=''){
+
+  return String(v).replace(
+    /'/g,
+    "\\'"
+  );
+
+}
+
+
+
+function slug(v=''){
+
+  return String(v)
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9]/g,
+      ''
+    );
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>

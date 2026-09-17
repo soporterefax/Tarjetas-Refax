@@ -1,0 +1,9 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+instance/
+usuarios.db
+static/qr/
+.DS_Store

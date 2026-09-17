@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | REFAX</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: white;
+            width: 390px;
+            padding: 38px;
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.15);
+            text-align: center;
+            border-top: 8px solid #f47b20;
+        }
+
+        .logo {
+            width: 250px;
+            margin-bottom: 18px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 28px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #f47b20;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #e96f14;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 11px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <img src="{{ url_for('static', filename='img/refax-logo.png') }}" class="logo" alt="Logo Refax">
+
+        <div class="subtitle">
+            Tarjetas digitales corporativas
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <input type="text" name="username" placeholder="Usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">Ingresar</button>
+        </form>
+
+        <div class="footer">
+            REFAX Perú · Acceso seguro
+        </div>
+    </div>
+</body>
+</html>

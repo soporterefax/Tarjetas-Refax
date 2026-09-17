@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+  <title>Mi tarjeta | REFAX</title>
+
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <style>
+    .password-section {
+      max-width: 620px;
+      margin: 0 auto 20px;
+    }
+
+    .password-form {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .security-alert {
+      padding: 16px;
+      border-radius: 12px;
+      background: #fff4e8;
+      border: 1px solid #f2c38f;
+      margin-bottom: 18px;
+    }
+
+    .security-alert strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+
+<body>
+
+<header class="header">
+
+  <img
+    src="assets/img/refax-logo.png"
+    class="logo"
+    alt="Logo Refax"
+  >
+
+  <button
+    class="btn btn-primary no-margin"
+    onclick="logout()"
+  >
+    Cerrar sesión
+  </button>
+
+</header>
+
+
+<main class="container">
+
+  <!-- ================================= -->
+  <!-- CAMBIO OBLIGATORIO DE CONTRASEÑA -->
+  <!-- ================================= -->
+
+  <section
+    id="forcedPasswordSection"
+    class="card password-section hidden"
+  >
+
+    <div class="security-alert">
+
+      <strong>
+        🔐 Debes cambiar tu contraseña
+      </strong>
+
+      Por seguridad, antes de continuar debes reemplazar
+      la contraseña temporal por una contraseña personal.
+
+    </div>
+
+
+    <h2>
+      Crear nueva contraseña
+    </h2>
+
+
+    <form
+      id="forcedPasswordForm"
+      class="password-form"
+    >
+
+      <div>
+
+        <label>
+          Contraseña actual
+        </label>
+
+        <input
+          type="password"
+          id="forcedCurrentPassword"
+          required
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          Nueva contraseña
+        </label>
+
+        <input
+          type="password"
+          id="forcedNewPassword"
+          minlength="8"
+          required
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          Confirmar nueva contraseña
+        </label>
+
+        <input
+          type="password"
+          id="forcedConfirmPassword"
+          minlength="8"
+          required
+        >
+
+      </div>
+
+
+      <button
+        type="submit"
+        class="btn btn-primary no-margin"
+      >
+        Cambiar contraseña y continuar
+      </button>
+
+
+      <div
+        id="forcedPasswordMessage"
+        class="message"
+      ></div>
+
+    </form>
+
+  </section>
+
+
+  <!-- ================================= -->
+  <!-- PERFIL -->
+  <!-- ================================= -->
+
+  <section
+    id="profile"
+    class="card profile-card hidden"
+  >
+
+    <div class="loading">
+      Cargando tu tarjeta...
+    </div>
+
+  </section>
+
+
+  <!-- ================================= -->
+  <!-- CLIENTES B2B -->
+  <!-- ================================= -->
+
+  <section
+    id="clientsSection"
+    class="card clients-section hidden"
+  ></section>
+
+
+</main>
+
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/api.js"></script>
+
+
+<script>
+
+if(requireRole('usuario')){
+  load();
+}
+
+
+let me = null;
+let clientes = [];
+
+
+/* =====================================
+   CARGAR PERFIL
+===================================== */
+
+async function load(){
+
+  try{
+
+    me = await api(
+      '/api/user/mi-tarjeta'
+    );
+
+
+    if(me.debe_cambiar_password){
+
+      showForcedPassword();
+
+      return;
+
+    }
+
+
+    await showNormalPanel();
+
+  }
+
+  catch(e){
+
+    profile.classList.remove(
+      'hidden'
+    );
+
+    profile.innerHTML = `
+      <div class="message error show">
+        ${esc(e.message)}
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* =====================================
+   CAMBIO OBLIGATORIO
+===================================== */
+
+function showForcedPassword(){
+
+  forcedPasswordSection
+    .classList
+    .remove('hidden');
+
+
+  profile
+    .classList
+    .add('hidden');
+
+
+  clientsSection
+    .classList
+    .add('hidden');
+
+}
+
+
+/* =====================================
+   PANEL NORMAL
+===================================== */
+
+async function showNormalPanel(){
+
+  // El cambio obligatorio ya no debe mostrarse
+  forcedPasswordSection
+    .classList
+    .add('hidden');
+
+
+  // Mostrar tarjeta
+  profile
+    .classList
+    .remove('hidden');
+
+
+  profile.innerHTML =
+    renderProfile(me);
+
+
+  // Clientes privados solo para B2B
+  if(me.tipo_usuario === 'B2B'){
+
+    clientsSection
+      .classList
+      .remove('hidden');
+
+    await loadClients();
+
+  }
+
+  else{
+
+    clientsSection
+      .classList
+      .add('hidden');
+
+    clientsSection.innerHTML = '';
+
+  }
+
+}
+
+
+/* =====================================
+   PERFIL
+===================================== */
+
+function renderProfile(u){
+
+  const detail =
+    u.tipo_usuario === 'B2B'
+      ? 'Ejecutivo Web'
+      : (
+          u.tipo_usuario === 'GNs'
+            ? 'GNs'
+            : u.cargo
+        );
+
+
+  return `
+
+    <span
+      class="type-badge type-${slug(u.tipo_usuario)}"
+    >
+      ${esc(u.tipo_usuario)}
+    </span>
+
+
+    <h1 class="user-name">
+      ${esc(u.nombre)}
+    </h1>
+
+
+    <div class="user-cargo">
+      ${esc(detail)}
+    </div>
+
+
+    <div class="info">
+
+      <p>
+        <strong>Celular:</strong>
+        ${esc(u.celular)}
+      </p>
+
+
+      ${
+        u.tipo_usuario !== 'B2B'
+        ?
+        `
+        <p>
+          <strong>Correo:</strong>
+          ${esc(u.correo)}
+        </p>
+        `
+        :
+        ''
+      }
+
+
+      ${
+        u.tipo_usuario === 'B2B'
+        ?
+        `
+        <p>
+          <strong>Atención web:</strong>
+          ${esc(u.atencion_web || '')}
+        </p>
+        `
+        :
+        ''
+      }
+
+    </div>
+
+
+    <img
+      class="qr"
+      src="${u.qr_url}"
+      alt="QR"
+    >
+
+
+    <div class="actions">
+
+      <a
+        class="btn btn-primary no-margin"
+        href="${u.card_url}"
+        target="_blank"
+      >
+        Ver mi tarjeta
+      </a>
+
+
+      <a
+        class="btn btn-secondary"
+        href="${u.qr_url}"
+        target="_blank"
+      >
+        Descargar QR
+      </a>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =====================================
+   CAMBIAR PASSWORD OBLIGATORIO
+===================================== */
+
+forcedPasswordForm
+  .addEventListener(
+    'submit',
+    async e => {
+
+      e.preventDefault();
+
+
+      const body = {
+
+        password_actual:
+          forcedCurrentPassword.value,
+
+        password_nueva:
+          forcedNewPassword.value,
+
+        password_confirmacion:
+          forcedConfirmPassword.value
+
+      };
+
+
+      try{
+
+        await api(
+          '/api/user/cambiar-password',
+          {
+            method: 'POST',
+            body: JSON.stringify(body)
+          }
+        );
+
+
+        forcedPasswordMessage
+          .textContent =
+            'Contraseña actualizada correctamente.';
+
+
+        forcedPasswordMessage
+          .className =
+            'message ok show';
+
+
+        me.debe_cambiar_password = false;
+
+
+        forcedPasswordForm.reset();
+
+
+        setTimeout(
+          async () => {
+
+            forcedPasswordMessage
+              .classList
+              .remove('show');
+
+            await showNormalPanel();
+
+          },
+          700
+        );
+
+      }
+
+      catch(err){
+
+        forcedPasswordMessage
+          .textContent =
+            err.message;
+
+
+        forcedPasswordMessage
+          .className =
+            'message error show';
+
+      }
+
+    }
+  );
+
+
+/* =====================================
+   CLIENTES B2B
+===================================== */
+
+async function loadClients(){
+
+  try{
+
+    clientes = await api(
+      '/api/user/clientes-b2b'
+    );
+
+
+    renderClients();
+
+  }
+
+  catch(e){
+
+    clientsSection.innerHTML = `
+
+      <div class="message error show">
+        ${esc(e.message)}
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+function renderClients(){
+
+  clientsSection.innerHTML = `
+
+    <div class="section-heading">
+
+      <div>
+
+        <h2>
+          Mis clientes B2B
+        </h2>
+
+        <p class="muted">
+          Esta información es privada y solo aparece después de iniciar sesión.
+        </p>
+
+      </div>
+
+
+      <button
+        class="btn btn-primary no-margin"
+        onclick="newClient()"
+      >
+        + Agregar cliente
+      </button>
+
+    </div>
+
+
+    <div id="clientForm"></div>
+
+
+    <div class="client-grid">
+
+      ${
+        clientes.length
+        ?
+        clientes
+          .map(c => clientCard(c))
+          .join('')
+        :
+        `
+        <div class="empty client-empty">
+          Aún no tienes clientes registrados.
+        </div>
+        `
+      }
+
+    </div>
+
+  `;
+
+}
+
+
+function clientCard(c){
+
+  return `
+
+    <article class="client-card">
+
+      <div class="client-card-head">
+
+        <strong>
+          RUC ${esc(c.ruc)}
+        </strong>
+
+
+        <div class="actions">
+
+          <button
+            class="btn btn-edit"
+            onclick="editClient(${c.id})"
+          >
+            Editar
+          </button>
+
+
+          <button
+            class="btn btn-danger"
+            onclick="deleteClient(${c.id})"
+          >
+            Eliminar
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="credential-row">
+
+        <span>
+          Usuario
+        </span>
+
+        <code>
+          ${esc(c.usuario)}
+        </code>
+
+      </div>
+
+
+      <div class="credential-row">
+
+        <span>
+          Contraseña
+        </span>
+
+
+        <code
+          id="pwd-${c.id}"
+          class="password-mask"
+          data-value="${attr(c.contrasena)}"
+        >
+          ••••••••
+        </code>
+
+
+        <button
+          class="mini-btn"
+          onclick="togglePassword(${c.id}, this)"
+        >
+          Ver
+        </button>
+
+      </div>
+
+    </article>
+
+  `;
+
+}
+
+
+function newClient(){
+
+  showClientForm({});
+
+}
+
+
+function editClient(id){
+
+  showClientForm(
+    clientes.find(
+      c => c.id === id
+    ) || {}
+  );
+
+}
+
+
+function showClientForm(c){
+
+  const editing = !!c.id;
+
+
+  clientForm.innerHTML = `
+
+    <form
+      class="client-form"
+      id="b2bForm"
+    >
+
+      <h3>
+        ${editing ? 'Editar cliente' : 'Nuevo cliente'}
+      </h3>
+
+
+      <div
+        class="form-grid form-grid-3"
+      >
+
+        <div>
+
+          <label>
+            RUC
+          </label>
+
+          <input
+            id="ruc"
+            value="${attr(c.ruc || '')}"
+            required
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Usuario
+          </label>
+
+          <input
+            id="usuarioCliente"
+            value="${attr(c.usuario || '')}"
+            required
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            Contraseña
+          </label>
+
+          <input
+            id="contrasenaCliente"
+            type="text"
+            value="${attr(c.contrasena || '')}"
+            ${editing ? '' : 'required'}
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="btn btn-primary no-margin"
+          type="submit"
+        >
+          ${editing ? 'Guardar cambios' : 'Agregar cliente'}
+        </button>
+
+
+        <button
+          class="btn btn-secondary"
+          type="button"
+          onclick="clientForm.innerHTML=''"
+        >
+          Cancelar
+        </button>
+
+      </div>
+
+    </form>
+
+  `;
+
+
+  b2bForm.addEventListener(
+    'submit',
+    async e => {
+
+      e.preventDefault();
+
+
+      const body = {
+
+        ruc:
+          ruc.value,
+
+        usuario:
+          usuarioCliente.value,
+
+        contrasena:
+          contrasenaCliente.value
+
+      };
+
+
+      try{
+
+        await api(
+
+          editing
+            ? `/api/user/clientes-b2b/${c.id}`
+            : '/api/user/clientes-b2b',
+
+          {
+            method:
+              editing
+                ? 'PUT'
+                : 'POST',
+
+            body:
+              JSON.stringify(body)
+          }
+
+        );
+
+
+        await loadClients();
+
+      }
+
+      catch(err){
+
+        alert(
+          err.message
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================
+   ELIMINAR CLIENTE
+===================================== */
+
+async function deleteClient(id){
+
+  if(
+    !confirm(
+      '¿Eliminar este cliente?'
+    )
+  ){
+    return;
+  }
+
+
+  try{
+
+    await api(
+      `/api/user/clientes-b2b/${id}`,
+      {
+        method: 'DELETE'
+      }
+    );
+
+
+    await loadClients();
+
+  }
+
+  catch(e){
+
+    alert(
+      e.message
+    );
+
+  }
+
+}
+
+
+/* =====================================
+   VER CONTRASEÑA B2B
+===================================== */
+
+function togglePassword(id, btn){
+
+  const el =
+    document.getElementById(
+      `pwd-${id}`
+    );
+
+
+  const show =
+    el.textContent === '••••••••';
+
+
+  el.textContent =
+    show
+      ? el.dataset.value
+      : '••••••••';
+
+
+  btn.textContent =
+    show
+      ? 'Ocultar'
+      : 'Ver';
+
+}
+
+
+/* =====================================
+   HELPERS
+===================================== */
+
+function esc(v=''){
+
+  return String(v).replace(
+    /[&<>"']/g,
+    c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[c])
+  );
+
+}
+
+
+function attr(v=''){
+
+  return esc(v);
+
+}
+
+
+function slug(v=''){
+
+  return String(v || '')
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9]/g,
+      ''
+    );
+
+}
+
+</script>
+
+</body>
+</html>

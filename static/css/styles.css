@@ -1,0 +1,338 @@
+:root {
+    --bg: #eef2f7;
+    --panel: #ffffff;
+    --ink: #172033;
+    --muted: #667085;
+    --line: #d9e0ea;
+    --orange: #f47b20;
+    --gray: #6b7280;
+    --dark: #374151;
+    --soft: #f8fafc;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+}
+
+a {
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.app-shell {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 32px 0;
+    display: grid;
+    grid-template-columns: minmax(300px, 430px) 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 16px 45px rgba(20, 31, 51, 0.08);
+}
+
+.brand-header {
+    display: grid;
+    place-items: center;
+    min-height: 112px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.brand-header img,
+.card-logo img {
+    display: block;
+    width: min(100%, 310px);
+    height: auto;
+}
+
+.section-heading {
+    margin-bottom: 18px;
+}
+
+.section-heading p {
+    margin: 0 0 6px;
+    color: var(--orange);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+.section-heading h1,
+.section-heading h2 {
+    margin: 0;
+    color: var(--dark);
+    font-size: 30px;
+    line-height: 1.1;
+}
+
+.fixed-info {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 18px;
+    padding: 13px 14px;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+}
+
+.fixed-info p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.user-form {
+    display: grid;
+    gap: 14px;
+}
+
+.user-form label {
+    display: grid;
+    gap: 7px;
+    color: #344054;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.user-form input {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 12px 13px;
+    color: var(--ink);
+    font-size: 15px;
+    outline: none;
+}
+
+.user-form input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(244, 123, 32, 0.16);
+}
+
+button {
+    border: 0;
+    border-radius: 6px;
+    padding: 13px 16px;
+    background: var(--orange);
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #d96513;
+}
+
+.link-button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--orange);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.link-button:hover {
+    background: transparent;
+    color: #b9470b;
+}
+
+.link-button.danger {
+    color: #b42318;
+}
+
+.users-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.user-card {
+    display: grid;
+    grid-template-columns: 116px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 14px;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.user-card img {
+    width: 116px;
+    height: 116px;
+    object-fit: contain;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px;
+}
+
+.user-card h3 {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+
+.user-card p,
+.user-card span {
+    display: block;
+    margin: 0 0 4px;
+    color: var(--muted);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.actions form {
+    margin: 0;
+}
+
+.edit-shell {
+    width: min(520px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 32px 0;
+}
+
+.form-error {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    color: #912018;
+    background: #fffbfa;
+    border: 1px solid #fecdca;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.secondary-action {
+    color: var(--muted);
+}
+
+.empty-state {
+    display: grid;
+    min-height: 240px;
+    place-items: center;
+    color: var(--muted);
+    background: var(--soft);
+    border: 1px dashed #b6c1d1;
+    border-radius: 8px;
+}
+
+.card-page {
+    display: grid;
+    place-items: center;
+    padding: 28px 16px;
+    background: #e7edf4;
+}
+
+.digital-card {
+    width: min(100%, 520px);
+    background: white;
+    border: 1px solid #cfd8e3;
+    border-radius: 8px;
+    padding: 34px 32px;
+    box-shadow: 0 22px 60px rgba(20, 31, 51, 0.14);
+}
+
+.card-logo {
+    display: grid;
+    place-items: center;
+    min-height: 118px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.identity {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.identity h1 {
+    margin: 0 0 8px;
+    color: var(--dark);
+    font-size: 28px;
+    line-height: 1.15;
+}
+
+.identity p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+}
+
+.contact-list {
+    display: grid;
+    gap: 12px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+}
+
+.contact-list p {
+    margin: 0;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 840px) {
+    .app-shell {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .panel,
+    .digital-card {
+        padding: 20px;
+    }
+
+    .section-heading h1,
+    .section-heading h2 {
+        font-size: 25px;
+    }
+
+    .brand-header img,
+    .card-logo img {
+        width: min(100%, 260px);
+    }
+
+    .user-card {
+        grid-template-columns: 92px 1fr;
+    }
+
+    .user-card img {
+        width: 92px;
+        height: 92px;
+    }
+}

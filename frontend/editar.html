@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Editar usuario | REFAX</title><link rel="stylesheet" href="assets/css/app.css"></head>
+<body>
+<header class="header"><img src="assets/img/refax-logo.png" class="logo" alt="Logo Refax"><a href="admin.html" class="btn btn-secondary">Volver al panel</a></header>
+<main class="edit-container"><div class="edit-card"><h1>Editar usuario</h1><h2 id="subtitle" class="subtitle">Cargando...</h2><div id="msg" class="message error"></div>
+<form id="editForm">
+<label>Tipo de usuario</label><select id="tipo_usuario" required><option value="GNs">GNs</option><option value="B2B">B2B</option><option value="Administrativo">Administrativo</option></select>
+<label>Nombre completo</label><input type="text" id="nombre" required>
+<label>Celular</label><input type="text" id="celular" required>
+<label id="correoLabel">Correo corporativo</label><input type="email" id="correo" required><small id="correoHint" class="field-hint"></small>
+<div id="dynamicFields"></div>
+<div class="edit-actions"><button type="submit" class="btn btn-primary">Guardar cambios</button></div>
+</form></div></main>
+<script src="assets/js/config.js"></script><script src="assets/js/api.js"></script><script>
+if(requireRole('admin')) load(); const id=new URLSearchParams(location.search).get('id'); let current;
+function renderFields(values={}){const tipo=tipo_usuario.value;correoLabel.textContent=tipo==='B2B'?'Correo corporativo (solo acceso)':'Correo corporativo';correoHint.textContent=tipo==='B2B'?'No se muestra en la tarjeta pública.':'';dynamicFields.innerHTML='';if(tipo==='Administrativo')dynamicFields.innerHTML=`<label>Cargo</label><input type="text" id="cargo" value="${attr(values.cargo||'')}" required>`;if(tipo==='B2B')dynamicFields.innerHTML=`<label>Atención web</label><input type="text" id="atencion_web" value="${attr(values.atencion_web||'')}" required><div class="fixed-info"><strong>Cargo fijo:</strong> Ejecutivo Web</div>`;}
+tipo_usuario.addEventListener('change',()=>renderFields(current||{}));
+async function load(){if(!id){show('Usuario no válido');return}try{const users=await api('/api/admin/usuarios');current=users.find(u=>u.public_id===id);if(!current)throw new Error('Usuario no encontrado');subtitle.textContent=current.nombre;tipo_usuario.value=current.tipo_usuario||'Administrativo';nombre.value=current.nombre;celular.value=current.celular;correo.value=current.correo;renderFields(current)}catch(e){show(e.message)}}
+editForm.addEventListener('submit',async e=>{e.preventDefault();const payload={tipo_usuario:tipo_usuario.value,nombre:nombre.value,celular:celular.value,correo:correo.value};const cargo=document.getElementById('cargo'),att=document.getElementById('atencion_web');if(cargo)payload.cargo=cargo.value;if(att)payload.atencion_web=att.value;try{await api(`/api/admin/usuarios/${id}`,{method:'PUT',body:JSON.stringify(payload)});window.location.href='admin.html'}catch(err){show(err.message)}});
+function show(t){msg.textContent=t;msg.classList.add('show')}function attr(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script></body></html>
